@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Título y Descripción que aparecerán en la vista previa de WhatsApp -->
+    <title>Gana un Bono de $100 - Ecuabet</title>
+    <meta name="description" content="Participa por un bono de $100 completando una breve encuesta si ya eres parte de ECUABET.">
+
+    <!-- META TAGS OPEN GRAPH (Para WhatsApp, Facebook, LinkedIn, etc.) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="¿TE GUSTARÍA PARTICIPAR POR UN BONO DE $100?">
+    <meta property="og:description" content="Si ya eres parte de ECUABET, solo llena la siguiente encuesta.">
+    
+    <!-- RUTA A TU IMAGEN EN GITHUB (Verificar Nota abajo) -->
+    <meta property="og:image" content="https://raw.githubusercontent.com/TU_USUARIO/TU_REPOSITORIO/main/ecuabet.png">
+    <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/TU_USUARIO/TU_REPOSITORIO/main/ecuabet.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a237e;
+            color: #ffffff;
+            text-align: center;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            max-width: 400px;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 24px;
+            background-color: #00c853;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Cargando formulario...</h2>
+        <p>Por favor, permite el acceso a tu ubicación si el navegador lo solicita para continuar.</p>
+        <a id="redirect-link" href="https://script.google.com/macros/s/AKfycbwd9e8X06X01Bn13evnRmV07WfOxI6pDob5gYWY0_sUzJJQ2FnaUg0WI9THY9bTDVJf/exec" class="btn">Hacer clic aquí si no redirige automáticamente</a>
+    </div>
+
+    <script>
+        const targetUrl = "https://script.google.com/macros/s/AKfycbwd9e8X06X01Bn13evnRmV07WfOxI6pDob5gYWY0_sUzJJQ2FnaUg0WI9THY9bTDVJf/exec";
+
+        function serRedireccionar() {
+            window.location.href = targetUrl;
+        }
+
+        // Solicitar permisos de geolocalización antes de redireccionar
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    // Si el usuario acepta la ubicación, se redirige enviando las coordenadas opcionalmente
+                    serRedireccionar();
+                },
+                function(error) {
+                    // Si el usuario deniega la ubicación o falla, redirige de todas formas
+                    console.warn("Ubicación denegada o no disponible:", error.message);
+                    serRedireccionar();
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            // Si el navegador no soporta geolocalización, redirige directamente
+            serRedireccionar();
+        }
+    </script>
+</body>
+</html>
